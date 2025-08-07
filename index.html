@@ -20,8 +20,6 @@
         }
         .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-        .animate-spin { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .glow { text-shadow: 0 0 10px currentColor; }
         .slide-in { animation: slideIn 0.5s ease-out; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -95,40 +93,10 @@
             <div class="mt-6 flex items-center justify-between">
                 <div class="flex items-center text-gray-300">
                     <span class="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></span>
-                    <span class="font-medium">Last updated: <span id="lastUpdate" class="text-cyan-300">Waiting for data...</span></span>
+                    <span class="font-medium">Last updated: <span id="lastUpdate" class="text-cyan-300">Loading...</span></span>
                 </div>
-                <div id="connectionStatus" class="px-4 py-2 rounded-lg bg-gray-700/50 text-gray-300 text-sm">
-                    🔌 Connecting to API...
-                </div>
-            </div>
-        </div>
-
-        <!-- Filters -->
-        <div class="glass-card rounded-2xl p-6 mb-8">
-            <h2 class="text-2xl font-bold mb-6 flex items-center text-white">
-                <span class="mr-3 text-2xl">🔍</span>
-                <span class="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Smart Filters</span>
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div>
-                    <label class="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">Min Days to Expiration</label>
-                    <input type="number" value="14" id="minExpiration" onchange="applyFilters()" class="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">Min Score</label>
-                    <input type="number" value="50" id="minScore" onchange="applyFilters()" class="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">Ticker Filter</label>
-                    <input type="text" placeholder="Enter ticker..." id="tickerFilter" onkeyup="applyFilters()" class="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">Option Type</label>
-                    <select id="optionType" onchange="applyFilters()" class="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white">
-                        <option value="all">All Options</option>
-                        <option value="CALL">Calls Only</option>
-                        <option value="PUT">Puts Only</option>
-                    </select>
+                <div id="connectionStatus" class="px-4 py-2 rounded-lg bg-green-700/50 text-green-300 text-sm">
+                    🟢 Data Loaded
                 </div>
             </div>
         </div>
@@ -158,9 +126,9 @@
                         <tr>
                             <td colspan="5" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center">
-                                    <div class="animate-spin h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></div>
-                                    <p class="text-gray-300 text-lg font-medium">Waiting for options data from Python scanner...</p>
-                                    <p class="text-gray-500 text-sm mt-2">Make sure your Python API is running on localhost:5000</p>
+                                    <div class="text-6xl mb-4">📊</div>
+                                    <p class="text-gray-300 text-lg font-medium">Loading options data...</p>
+                                    <p class="text-gray-500 text-sm mt-2">Data updates automatically when scanner runs</p>
                                 </div>
                             </td>
                         </tr>
@@ -168,70 +136,39 @@
                 </table>
             </div>
         </div>
-
-        <!-- Footer Status -->
-        <div class="mt-8 text-center">
-            <div class="glass-card rounded-2xl p-6">
-                <h3 class="text-xl font-bold text-white mb-3">🚀 Dashboard Status</h3>
-                <div class="flex justify-center space-x-6">
-                    <span id="apiStatus" class="px-4 py-2 rounded-lg text-sm font-bold bg-red-900/50 text-red-300 border border-red-700/50">❌ API Disconnected</span>
-                    <span class="px-4 py-2 rounded-lg text-sm font-bold bg-blue-900/50 text-blue-300 border border-blue-700/50">📡 Real-time Data</span>
-                    <span class="px-4 py-2 rounded-lg text-sm font-bold bg-purple-900/50 text-purple-300 border border-purple-700/50">🤖 AI Enabled</span>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
         let allAlerts = [];
-        let filteredAlerts = [];
 
         function loadData() {
-            fetch('http://localhost:5000/api/alerts')
+            // Load from dashboard_data.json file created by Python scanner
+            fetch('./dashboard_data.json')
                 .then(response => {
-                    if (!response.ok) throw new Error('API not available');
+                    if (!response.ok) throw new Error('No data file found');
                     return response.json();
                 })
                 .then(data => {
-                    console.log('✅ Live data loaded from Python API');
+                    console.log('✅ Data loaded from Python scanner');
                     allAlerts = data.alerts || [];
-                    document.getElementById('connectionStatus').innerHTML = '🟢 API Connected';
+                    document.getElementById('connectionStatus').innerHTML = '🟢 Data Loaded';
                     document.getElementById('connectionStatus').className = 'px-4 py-2 rounded-lg bg-green-700/50 text-green-300 text-sm';
-                    document.getElementById('apiStatus').innerHTML = '✅ API Connected';
-                    document.getElementById('apiStatus').className = 'px-4 py-2 rounded-lg text-sm font-bold bg-green-900/50 text-green-300 border border-green-700/50';
                     
-                    applyFilters();
-                    updateStats();
+                    displayAlerts(allAlerts);
+                    updateStats(allAlerts);
+                    
+                    if (data.last_updated) {
+                        document.getElementById('lastUpdate').textContent = new Date(data.last_updated).toLocaleString();
+                    }
                 })
                 .catch(error => {
-                    console.log('❌ Python API not available');
+                    console.log('❌ No data file found - run Python scanner');
                     allAlerts = [];
-                    document.getElementById('connectionStatus').innerHTML = '🔴 API Disconnected';
+                    document.getElementById('connectionStatus').innerHTML = '🔴 No Data';
                     document.getElementById('connectionStatus').className = 'px-4 py-2 rounded-lg bg-red-700/50 text-red-300 text-sm';
-                    document.getElementById('apiStatus').innerHTML = '❌ API Disconnected';
-                    document.getElementById('apiStatus').className = 'px-4 py-2 rounded-lg text-sm font-bold bg-red-900/50 text-red-300 border border-red-700/50';
                     
                     displayNoData();
                 });
-        }
-
-        function applyFilters() {
-            const minExpiration = parseInt(document.getElementById('minExpiration').value) || 0;
-            const minScore = parseInt(document.getElementById('minScore').value) || 0;
-            const tickerFilter = document.getElementById('tickerFilter').value.toUpperCase();
-            const optionType = document.getElementById('optionType').value;
-
-            filteredAlerts = allAlerts.filter(alert => {
-                return (
-                    alert.daysToExpiration >= minExpiration &&
-                    alert.score >= minScore &&
-                    (tickerFilter === '' || alert.ticker.includes(tickerFilter)) &&
-                    (optionType === 'all' || alert.type === optionType)
-                );
-            });
-
-            displayAlerts(filteredAlerts);
-            updateStats();
         }
 
         function displayAlerts(alerts) {
@@ -239,18 +176,7 @@
             document.getElementById('alertCount').textContent = `${alerts.length} alerts`;
             
             if (alerts.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="px-6 py-12 text-center">
-                            <div class="text-gray-400 text-lg">
-                                ${allAlerts.length === 0 ? 
-                                    '🔌 Waiting for Python scanner to send data...' : 
-                                    '🔍 No alerts match your current filters'
-                                }
-                            </div>
-                        </td>
-                    </tr>
-                `;
+                displayNoData();
                 return;
             }
 
@@ -278,7 +204,7 @@
                         </td>
                         <td class="px-6 py-6">
                             <div class="text-lg font-bold text-white">$${alert.lastPrice}</div>
-                            <div class="text-sm text-gray-400">Stock: $${alert.currentPrice}</div>
+                            <div class="text-sm text-gray-400">Stock: $${alert.currentPrice?.toFixed(2)}</div>
                             <div class="text-sm text-gray-400">Strike: $${alert.strike}</div>
                         </td>
                         <td class="px-6 py-6">
@@ -288,10 +214,10 @@
                         </td>
                         <td class="px-6 py-6">
                             <div class="space-y-1 text-sm">
-                                <div class="text-gray-300">Δ: <span class="text-white font-medium">${alert.delta?.toFixed(3)}</span></div>
-                                <div class="text-gray-300">Γ: <span class="text-white font-medium">${alert.gamma?.toFixed(4)}</span></div>
-                                <div class="text-gray-300">Θ: <span class="text-white font-medium">${alert.theta?.toFixed(2)}</span></div>
-                                <div class="text-gray-300">ν: <span class="text-white font-medium">${alert.vega?.toFixed(3)}</span></div>
+                                <div class="text-gray-300">Δ: <span class="text-white font-medium">${alert.delta?.toFixed(3) || 'N/A'}</span></div>
+                                <div class="text-gray-300">Γ: <span class="text-white font-medium">${alert.gamma?.toFixed(4) || 'N/A'}</span></div>
+                                <div class="text-gray-300">Θ: <span class="text-white font-medium">${alert.theta?.toFixed(2) || 'N/A'}</span></div>
+                                <div class="text-gray-300">ν: <span class="text-white font-medium">${alert.vega?.toFixed(3) || 'N/A'}</span></div>
                             </div>
                         </td>
                         <td class="px-6 py-6">
@@ -313,32 +239,30 @@
                 <tr>
                     <td colspan="5" class="px-6 py-12 text-center">
                         <div class="flex flex-col items-center">
-                            <div class="text-6xl mb-4">🔌</div>
-                            <p class="text-gray-300 text-xl font-bold mb-2">Python API Not Connected</p>
-                            <p class="text-gray-500">Start your Python scanner to see live options data</p>
-                            <p class="text-gray-600 text-sm mt-2">Run: python enhanced_run_alerts.py</p>
+                            <div class="text-6xl mb-4">🔍</div>
+                            <p class="text-gray-300 text-xl font-bold mb-2">No Options Data Found</p>
+                            <p class="text-gray-500">Run your Python scanner to populate the dashboard</p>
+                            <p class="text-gray-600 text-sm mt-2">Command: python enhanced_run_alerts.py</p>
                         </div>
                     </td>
                 </tr>
             `;
             
             // Reset stats
-            document.getElementById('totalAlerts').textContent = '--';
-            document.getElementById('callAlerts').textContent = '--';
-            document.getElementById('putAlerts').textContent = '--';
-            document.getElementById('sweepAlerts').textContent = '--';
-            document.getElementById('highConfidence').textContent = '--';
+            document.getElementById('totalAlerts').textContent = '0';
+            document.getElementById('callAlerts').textContent = '0';
+            document.getElementById('putAlerts').textContent = '0';
+            document.getElementById('sweepAlerts').textContent = '0';
+            document.getElementById('highConfidence').textContent = '0';
             document.getElementById('alertCount').textContent = '0 alerts';
         }
 
-        function updateStats() {
-            const alerts = filteredAlerts;
+        function updateStats(alerts) {
             document.getElementById('totalAlerts').textContent = alerts.length;
             document.getElementById('callAlerts').textContent = alerts.filter(a => a.type === 'CALL').length;
             document.getElementById('putAlerts').textContent = alerts.filter(a => a.type === 'PUT').length;
             document.getElementById('sweepAlerts').textContent = alerts.filter(a => a.sweep).length;
             document.getElementById('highConfidence').textContent = alerts.filter(a => a.score >= 80).length;
-            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
         }
 
         function getMoneyness(strike, currentPrice, type) {

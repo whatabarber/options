@@ -37,17 +37,14 @@ def main():
     print(f"Top alerts selected: {len(top_alerts)}")
     
     if top_alerts:
-        # Send alerts to API server
-        try:
-            api_response = requests.post('http://localhost:5000/api/alerts', 
-                                       json={'alerts': top_alerts},
-                                       timeout=10)
-            if api_response.status_code == 200:
-                print("Successfully updated API server")
-            else:
-                print(f"API server update failed: {api_response.status_code}")
-        except Exception as e:
-            print(f"Could not reach API server: {e}")
+        # Save alerts to JSON file for dashboard
+        with open('dashboard_data.json', 'w') as f:
+            json.dump({
+                'alerts': top_alerts,
+                'last_updated': datetime.now().isoformat(),
+                'total': len(all_alerts)
+            }, f, indent=2)
+        print("Saved alerts to dashboard_data.json")
         
         # Send simplified Discord alert with dashboard link
         send_dashboard_alert(len(all_alerts), top_alerts, DISCORD_WEBHOOK)
