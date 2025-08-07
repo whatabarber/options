@@ -12,6 +12,6 @@ MAX_DAYS_TO_EXPIRATION = 60  # Maximum 2 months
 DASHBOARD_URL = os.getenv("DASHBOARD_URL", "http://localhost:3000")
 
 # GitHub settings
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "your_github_token_here")
-GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "your_github_username_here")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "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")
+GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "whatabarber")
 GITHUB_REPO = "options"

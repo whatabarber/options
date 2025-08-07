@@ -30,7 +30,7 @@ def update_github_repo():
 def setup_github_remote():
     """Setup GitHub remote with token authentication"""
     try:
-        repo_url = f"https://{GITHUB_TOKEN}@github.com/{GITHUB_USERNAME}/{GITHUB_REPO}.git"
+        repo_url = f"https://{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}@github.com/{whatabarber}/{options}.git"
         
         if not os.path.exists('.git'):
             repo = git.Repo.init()
