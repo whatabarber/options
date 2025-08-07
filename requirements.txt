@@ -1,0 +1,10 @@
+yfinance
+matplotlib
+requests
+py_vollib
+numpy
+scipy
+flask
+flask-cors
+python-dotenv
+GitPython
