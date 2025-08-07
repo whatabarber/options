@@ -129,10 +129,10 @@ def scan_options_enhanced(ticker):
                     iv = row.get("impliedVolatility", 0) or 0
                     
                     # Enhanced filtering criteria
-                    if (volume >= 100 and oi >= 500 and 
-                        abs(strike - current_price) / current_price <= 0.15 and  # Within 15% of current price
-                        iv > 0.1 and iv < 3.0 and  # Reasonable IV range
-                        last_price > 0.1):  # Minimum option price
+                    if (oi >= 1 and  # Just need some OI
+                        abs(strike - current_price) / current_price <= 0.30 and  # Within 30%
+                        iv > 0.01 and  # Very low IV minimum
+                        last_price > 0.01):  # Very low price minimum
                         
                         # Calculate Greeks
                         greeks = calculate_greeks(current_price, strike, time_to_expiry, 

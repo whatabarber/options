@@ -9,7 +9,7 @@ ENABLE_CHARTS = True
 MAX_ALERTS = 50  # Increased for dashboard
 MIN_DAYS_TO_EXPIRATION = 14  # At least 2 weeks
 MAX_DAYS_TO_EXPIRATION = 60  # Maximum 2 months
-DASHBOARD_URL = os.getenv("DASHBOARD_URL", "http://localhost:3000")
+DASHBOARD_URL = os.getenv("DASHBOARD_URL", "https://options-y3y2-git-master-whatabarbers-projects.vercel.app")
 
 # GitHub settings
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "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")
