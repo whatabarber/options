@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Options Flow Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .neon-border {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .glow { text-shadow: 0 0 10px currentColor; }
+        .slide-in { animation: slideIn 0.5s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="text-white">
+    <div class="container mx-auto p-6 max-w-7xl">
+        <!-- Header -->
+        <div class="glass-card rounded-2xl p-8 mb-8 neon-border">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent mb-3 glow">
+                        🎯 Live Options Flow
+                    </h1>
+                    <p class="text-gray-300 text-lg">AI-powered options screening with real-time analysis</p>
+                </div>
+                <button onclick="refreshData()" class="flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <span id="refreshIcon" class="mr-2 text-lg">🔄</span>
+                    <span id="refreshText" class="font-semibold">Refresh</span>
+                </button>
+            </div>
+            
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-5 gap-6">
+                <div class="bg-gradient-to-br from-blue-600/20 to-blue-800/20 p-6 rounded-xl border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300">
+                    <div class="flex items-center">
+                        <span class="text-3xl mr-4">📊</span>
+                        <div>
+                            <h3 class="font-bold text-blue-200 text-sm uppercase tracking-wide">Total Alerts</h3>
+                            <div class="text-4xl font-bold text-blue-300 glow" id="totalAlerts">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-emerald-600/20 to-emerald-800/20 p-6 rounded-xl border border-emerald-500/30 hover:border-emerald-400/50 transition-all duration-300">
+                    <div class="flex items-center">
+                        <span class="text-3xl mr-4">📈</span>
+                        <div>
+                            <h3 class="font-bold text-emerald-200 text-sm uppercase tracking-wide">Calls</h3>
+                            <div class="text-4xl font-bold text-emerald-300 glow" id="callAlerts">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-red-600/20 to-red-800/20 p-6 rounded-xl border border-red-500/30 hover:border-red-400/50 transition-all duration-300">
+                    <div class="flex items-center">
+                        <span class="text-3xl mr-4">📉</span>
+                        <div>
+                            <h3 class="font-bold text-red-200 text-sm uppercase tracking-wide">Puts</h3>
+                            <div class="text-4xl font-bold text-red-300 glow" id="putAlerts">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-purple-600/20 to-purple-800/20 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300">
+                    <div class="flex items-center">
+                        <span class="text-3xl mr-4">🔥</span>
+                        <div>
+                            <h3 class="font-bold text-purple-200 text-sm uppercase tracking-wide">Sweeps</h3>
+                            <div class="text-4xl font-bold text-purple-300 glow" id="sweepAlerts">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-amber-600/20 to-amber-800/20 p-6 rounded-xl border border-amber-500/30 hover:border-amber-400/50 transition-all duration-300">
+                    <div class="flex items-center">
+                        <span class="text-3xl mr-4">🎯</span>
+                        <div>
+                            <h3 class="font-bold text-amber-200 text-sm uppercase tracking-wide">High Confidence</h3>
+                            <div class="text-4xl font-bold text-amber-300 glow" id="highConfidence">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex items-center justify-between">
+                <div class="flex items-center text-gray-300">
+                    <span class="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></span>
+                    <span class="font-medium">Last updated: <span id="lastUpdate" class="text-cyan-300">Waiting for data...</span></span>
+                </div>
+                <div id="connectionStatus" class="px-4 py-2 rounded-lg bg-gray-700/50 text-gray-300 text-sm">
+                    🔌 Connecting to API...
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="glass-card rounded-2xl p-6 mb-8">
+            <h2 class="text-2xl font-bold mb-6 flex items-center text-white">
+                <span class="mr-3 text-2xl">🔍</span>
+                <span class="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Smart Filters</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div>
+                    <label class="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">Min Days to Expiration</label>
+                    <input type="number" value="14" id="minExpiration" onchange="applyFilters()" class="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">Min Score</label>
+                    <input type="number" value="50" id="minScore" onchange="applyFilters()" class="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">Ticker Filter</label>
+                    <input type="text" placeholder="Enter ticker..." id="tickerFilter" onkeyup="applyFilters()" class="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">Option Type</label>
+                    <select id="optionType" onchange="applyFilters()" class="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white">
+                        <option value="all">All Options</option>
+                        <option value="CALL">Calls Only</option>
+                        <option value="PUT">Puts Only</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts Table -->
+        <div class="glass-card rounded-2xl overflow-hidden neon-border">
+            <div class="px-8 py-6 bg-gradient-to-r from-gray-800/80 to-gray-900/80 border-b border-gray-700">
+                <h2 class="text-3xl font-bold flex items-center text-white">
+                    <span class="mr-3">💎</span>
+                    <span class="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Live Options Flow</span>
+                    <span class="ml-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-lg font-bold" id="alertCount">0 alerts</span>
+                </h2>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-gray-800/60">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-300 uppercase tracking-wider">Option Details</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-300 uppercase tracking-wider">Pricing</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-300 uppercase tracking-wider">Volume & Flow</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-300 uppercase tracking-wider">Greeks</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-300 uppercase tracking-wider">AI Analysis</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700/50" id="alertsTableBody">
+                        <tr>
+                            <td colspan="5" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center">
+                                    <div class="animate-spin h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></div>
+                                    <p class="text-gray-300 text-lg font-medium">Waiting for options data from Python scanner...</p>
+                                    <p class="text-gray-500 text-sm mt-2">Make sure your Python API is running on localhost:5000</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Footer Status -->
+        <div class="mt-8 text-center">
+            <div class="glass-card rounded-2xl p-6">
+                <h3 class="text-xl font-bold text-white mb-3">🚀 Dashboard Status</h3>
+                <div class="flex justify-center space-x-6">
+                    <span id="apiStatus" class="px-4 py-2 rounded-lg text-sm font-bold bg-red-900/50 text-red-300 border border-red-700/50">❌ API Disconnected</span>
+                    <span class="px-4 py-2 rounded-lg text-sm font-bold bg-blue-900/50 text-blue-300 border border-blue-700/50">📡 Real-time Data</span>
+                    <span class="px-4 py-2 rounded-lg text-sm font-bold bg-purple-900/50 text-purple-300 border border-purple-700/50">🤖 AI Enabled</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allAlerts = [];
+        let filteredAlerts = [];
+
+        function loadData() {
+            fetch('http://localhost:5000/api/alerts')
+                .then(response => {
+                    if (!response.ok) throw new Error('API not available');
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('✅ Live data loaded from Python API');
+                    allAlerts = data.alerts || [];
+                    document.getElementById('connectionStatus').innerHTML = '🟢 API Connected';
+                    document.getElementById('connectionStatus').className = 'px-4 py-2 rounded-lg bg-green-700/50 text-green-300 text-sm';
+                    document.getElementById('apiStatus').innerHTML = '✅ API Connected';
+                    document.getElementById('apiStatus').className = 'px-4 py-2 rounded-lg text-sm font-bold bg-green-900/50 text-green-300 border border-green-700/50';
+                    
+                    applyFilters();
+                    updateStats();
+                })
+                .catch(error => {
+                    console.log('❌ Python API not available');
+                    allAlerts = [];
+                    document.getElementById('connectionStatus').innerHTML = '🔴 API Disconnected';
+                    document.getElementById('connectionStatus').className = 'px-4 py-2 rounded-lg bg-red-700/50 text-red-300 text-sm';
+                    document.getElementById('apiStatus').innerHTML = '❌ API Disconnected';
+                    document.getElementById('apiStatus').className = 'px-4 py-2 rounded-lg text-sm font-bold bg-red-900/50 text-red-300 border border-red-700/50';
+                    
+                    displayNoData();
+                });
+        }
+
+        function applyFilters() {
+            const minExpiration = parseInt(document.getElementById('minExpiration').value) || 0;
+            const minScore = parseInt(document.getElementById('minScore').value) || 0;
+            const tickerFilter = document.getElementById('tickerFilter').value.toUpperCase();
+            const optionType = document.getElementById('optionType').value;
+
+            filteredAlerts = allAlerts.filter(alert => {
+                return (
+                    alert.daysToExpiration >= minExpiration &&
+                    alert.score >= minScore &&
+                    (tickerFilter === '' || alert.ticker.includes(tickerFilter)) &&
+                    (optionType === 'all' || alert.type === optionType)
+                );
+            });
+
+            displayAlerts(filteredAlerts);
+            updateStats();
+        }
+
+        function displayAlerts(alerts) {
+            const tbody = document.getElementById('alertsTableBody');
+            document.getElementById('alertCount').textContent = `${alerts.length} alerts`;
+            
+            if (alerts.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center">
+                            <div class="text-gray-400 text-lg">
+                                ${allAlerts.length === 0 ? 
+                                    '🔌 Waiting for Python scanner to send data...' : 
+                                    '🔍 No alerts match your current filters'
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = alerts.map((alert, index) => {
+                const moneyness = getMoneyness(alert.strike, alert.currentPrice, alert.type);
+                const confidenceColor = alert.score >= 80 ? 'text-emerald-400' : alert.score >= 65 ? 'text-blue-400' : 'text-amber-400';
+                const confidenceEmoji = alert.score >= 80 ? '🎯' : alert.score >= 65 ? '✅' : '⚠️';
+                
+                return `
+                    <tr class="hover:bg-gray-800/30 transition-all duration-300 slide-in" style="animation-delay: ${index * 0.1}s">
+                        <td class="px-6 py-6">
+                            <div class="flex items-center mb-2">
+                                <span class="inline-flex px-3 py-1 text-xs font-bold rounded-full ${
+                                    alert.type === 'CALL' ? 
+                                    'bg-emerald-900/50 text-emerald-300 border border-emerald-700/50' : 
+                                    'bg-red-900/50 text-red-300 border border-red-700/50'
+                                }">
+                                    ${alert.type}
+                                </span>
+                                ${alert.sweep ? '<span class="ml-2 inline-flex px-3 py-1 text-xs font-bold rounded-full bg-orange-900/50 text-orange-300 border border-orange-700/50">🔥 SWEEP</span>' : ''}
+                            </div>
+                            <div class="text-lg font-bold text-white">${alert.ticker}</div>
+                            <div class="text-gray-300">$${alert.strike} | ${alert.expiration}</div>
+                            <div class="text-sm text-gray-400">${alert.daysToExpiration} days | <span class="${moneyness.color} font-medium">${moneyness.label}</span></div>
+                        </td>
+                        <td class="px-6 py-6">
+                            <div class="text-lg font-bold text-white">$${alert.lastPrice}</div>
+                            <div class="text-sm text-gray-400">Stock: $${alert.currentPrice}</div>
+                            <div class="text-sm text-gray-400">Strike: $${alert.strike}</div>
+                        </td>
+                        <td class="px-6 py-6">
+                            <div class="text-lg font-bold text-white">${alert.volume?.toLocaleString()}</div>
+                            <div class="text-sm text-gray-400">OI: ${alert.openInterest?.toLocaleString()}</div>
+                            <div class="text-sm text-cyan-400 font-medium">IV: ${(alert.impliedVolatility * 100).toFixed(1)}%</div>
+                        </td>
+                        <td class="px-6 py-6">
+                            <div class="space-y-1 text-sm">
+                                <div class="text-gray-300">Δ: <span class="text-white font-medium">${alert.delta?.toFixed(3)}</span></div>
+                                <div class="text-gray-300">Γ: <span class="text-white font-medium">${alert.gamma?.toFixed(4)}</span></div>
+                                <div class="text-gray-300">Θ: <span class="text-white font-medium">${alert.theta?.toFixed(2)}</span></div>
+                                <div class="text-gray-300">ν: <span class="text-white font-medium">${alert.vega?.toFixed(3)}</span></div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-6">
+                            <div class="flex items-center mb-3">
+                                <span class="text-lg mr-2">${confidenceEmoji}</span>
+                                <span class="text-2xl font-bold ${confidenceColor} glow">${alert.score?.toFixed(0)}</span>
+                                <span class="ml-2 text-sm text-gray-400">score</span>
+                            </div>
+                            <div class="text-sm text-gray-300 leading-relaxed max-w-xs">${alert.commentary}</div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function displayNoData() {
+            const tbody = document.getElementById('alertsTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="px-6 py-12 text-center">
+                        <div class="flex flex-col items-center">
+                            <div class="text-6xl mb-4">🔌</div>
+                            <p class="text-gray-300 text-xl font-bold mb-2">Python API Not Connected</p>
+                            <p class="text-gray-500">Start your Python scanner to see live options data</p>
+                            <p class="text-gray-600 text-sm mt-2">Run: python enhanced_run_alerts.py</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            
+            // Reset stats
+            document.getElementById('totalAlerts').textContent = '--';
+            document.getElementById('callAlerts').textContent = '--';
+            document.getElementById('putAlerts').textContent = '--';
+            document.getElementById('sweepAlerts').textContent = '--';
+            document.getElementById('highConfidence').textContent = '--';
+            document.getElementById('alertCount').textContent = '0 alerts';
+        }
+
+        function updateStats() {
+            const alerts = filteredAlerts;
+            document.getElementById('totalAlerts').textContent = alerts.length;
+            document.getElementById('callAlerts').textContent = alerts.filter(a => a.type === 'CALL').length;
+            document.getElementById('putAlerts').textContent = alerts.filter(a => a.type === 'PUT').length;
+            document.getElementById('sweepAlerts').textContent = alerts.filter(a => a.sweep).length;
+            document.getElementById('highConfidence').textContent = alerts.filter(a => a.score >= 80).length;
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+        }
+
+        function getMoneyness(strike, currentPrice, type) {
+            const diff = type === 'CALL' ? (currentPrice - strike) : (strike - currentPrice);
+            const percentage = (diff / currentPrice) * 100;
+            if (Math.abs(percentage) < 2) return { label: 'ATM', color: 'text-amber-400' };
+            if (percentage > 0) return { label: 'ITM', color: 'text-emerald-400' };
+            return { label: 'OTM', color: 'text-red-400' };
+        }
+
+        function refreshData() {
+            document.getElementById('refreshIcon').innerHTML = '⟳';
+            document.getElementById('refreshText').textContent = 'Updating...';
+            
+            setTimeout(() => {
+                loadData();
+                document.getElementById('refreshIcon').innerHTML = '🔄';
+                document.getElementById('refreshText').textContent = 'Refresh';
+            }, 1000);
+        }
+
+        // Load data immediately and refresh every 30 seconds
+        loadData();
+        setInterval(loadData, 30000);
+    </script>
+</body>
+</html>
