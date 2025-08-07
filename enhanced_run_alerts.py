@@ -1,4 +1,3 @@
-import requests
 import json
 from datetime import datetime
 from config import TICKERS, DISCORD_WEBHOOK, MAX_ALERTS, DASHBOARD_URL
@@ -6,14 +5,10 @@ from enhanced_alert_logic import scan_options_enhanced
 from discord_alert_enhanced import send_dashboard_alert
 from history_logger import log_alerts
 from ai_commentary_enhanced import generate_enhanced_commentary
-from github_updater import update_github_repo, setup_github_remote
 
 def main():
-    """Enhanced main function with API integration"""
+    """Enhanced main function - clean version"""
     print(f"Starting enhanced options scan at {datetime.now()}")
-    
-    # Setup GitHub if tokens are provided
-    setup_github_remote()
     
     all_alerts = []
     
@@ -51,9 +46,6 @@ def main():
         
         # Log to CSV
         log_alerts(top_alerts)
-        
-        # Update GitHub repo
-        update_github_repo()
         
         print(f"Process completed. Dashboard available at: {DASHBOARD_URL}")
     else:
