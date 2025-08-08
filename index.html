@@ -22,7 +22,7 @@
         .slide-in { animation: slideIn 0.5s ease-out; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .tab-active { 
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
             transform: scale(1.05);
             box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
         }
@@ -45,8 +45,9 @@
                 </button>
             </div>
             
-            <!-- CLICKABLE FILTER TABS -->
+            <!-- ALL 5 CLICKABLE FILTER TABS -->
             <div class="mt-8 grid grid-cols-1 md:grid-cols-5 gap-6">
+                <!-- TAB 1: TOTAL ALERTS -->
                 <div onclick="filterByType('all')" id="tab-all" class="cursor-pointer bg-gradient-to-br from-blue-600/20 to-blue-800/20 p-6 rounded-xl border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300 tab-active">
                     <div class="flex items-center">
                         <span class="text-3xl mr-4">📊</span>
@@ -56,7 +57,9 @@
                         </div>
                     </div>
                 </div>
-                <div onclick="filterByType('CALL')" id="tab-calls" class="cursor-pointer bg-gradient-to-br from-emerald-600/20 to-emerald-800/20 p-6 rounded-xl border border-emerald-500/30 hover:border-emerald-400/50 transition-all duration-300">
+
+                <!-- TAB 2: CALLS -->
+                <div onclick="filterByType('CALL')" id="tab-CALL" class="cursor-pointer bg-gradient-to-br from-emerald-600/20 to-emerald-800/20 p-6 rounded-xl border border-emerald-500/30 hover:border-emerald-400/50 transition-all duration-300">
                     <div class="flex items-center">
                         <span class="text-3xl mr-4">📈</span>
                         <div>
@@ -65,7 +68,9 @@
                         </div>
                     </div>
                 </div>
-                <div onclick="filterByType('PUT')" id="tab-puts" class="cursor-pointer bg-gradient-to-br from-red-600/20 to-red-800/20 p-6 rounded-xl border border-red-500/30 hover:border-red-400/50 transition-all duration-300">
+
+                <!-- TAB 3: PUTS -->
+                <div onclick="filterByType('PUT')" id="tab-PUT" class="cursor-pointer bg-gradient-to-br from-red-600/20 to-red-800/20 p-6 rounded-xl border border-red-500/30 hover:border-red-400/50 transition-all duration-300">
                     <div class="flex items-center">
                         <span class="text-3xl mr-4">📉</span>
                         <div>
@@ -74,7 +79,9 @@
                         </div>
                     </div>
                 </div>
-                <div onclick="filterByType('sweep')" id="tab-sweeps" class="cursor-pointer bg-gradient-to-br from-purple-600/20 to-purple-800/20 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300">
+
+                <!-- TAB 4: SWEEPS -->
+                <div onclick="filterByType('sweep')" id="tab-sweep" class="cursor-pointer bg-gradient-to-br from-purple-600/20 to-purple-800/20 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300">
                     <div class="flex items-center">
                         <span class="text-3xl mr-4">🔥</span>
                         <div>
@@ -83,7 +90,9 @@
                         </div>
                     </div>
                 </div>
-                <div onclick="filterByType('high-confidence')" id="tab-confidence" class="cursor-pointer bg-gradient-to-br from-amber-600/20 to-amber-800/20 p-6 rounded-xl border border-amber-500/30 hover:border-amber-400/50 transition-all duration-300">
+
+                <!-- TAB 5: HIGH CONFIDENCE -->
+                <div onclick="filterByType('high-confidence')" id="tab-high-confidence" class="cursor-pointer bg-gradient-to-br from-amber-600/20 to-amber-800/20 p-6 rounded-xl border border-amber-500/30 hover:border-amber-400/50 transition-all duration-300">
                     <div class="flex items-center">
                         <span class="text-3xl mr-4">🎯</span>
                         <div>
@@ -170,7 +179,7 @@
                     allAlerts = data.alerts || [];
                     
                     updateStats(allAlerts);
-                    filterByType(currentFilter); // Apply current filter
+                    filterByType(currentFilter);
                     
                     if (data.last_updated) {
                         document.getElementById('lastUpdate').textContent = new Date(data.last_updated).toLocaleString();
@@ -184,12 +193,29 @@
 
         function filterByType(type) {
             currentFilter = type;
+            console.log('Filtering by:', type); // Debug log
             
-            // Update tab styling
+            // Clear all tab styling
             document.querySelectorAll('[id^="tab-"]').forEach(tab => {
                 tab.classList.remove('tab-active');
             });
-            document.getElementById(`tab-${type === 'high-confidence' ? 'confidence' : type}`).classList.add('tab-active');
+            
+            // Add active styling to correct tab
+            let activeTabId;
+            switch(type) {
+                case 'all': activeTabId = 'tab-all'; break;
+                case 'CALL': activeTabId = 'tab-CALL'; break;
+                case 'PUT': activeTabId = 'tab-PUT'; break;
+                case 'sweep': activeTabId = 'tab-sweep'; break;
+                case 'high-confidence': activeTabId = 'tab-high-confidence'; break;
+                default: activeTabId = 'tab-all';
+            }
+            
+            const activeTab = document.getElementById(activeTabId);
+            if (activeTab) {
+                activeTab.classList.add('tab-active');
+                console.log('Activated tab:', activeTabId); // Debug log
+            }
             
             // Filter alerts
             let filtered = allAlerts;
@@ -217,7 +243,10 @@
                     filterName = 'All Options';
             }
             
+            console.log(`Filtered ${filtered.length} alerts for ${type}`); // Debug log
+            
             document.getElementById('activeFilter').textContent = filterName;
+            document.getElementById('alertCount').textContent = `${filtered.length} alerts`;
             displayAlerts(filtered);
         }
 
@@ -227,7 +256,6 @@
 
         function displayAlerts(alerts) {
             const tbody = document.getElementById('alertsTableBody');
-            document.getElementById('alertCount').textContent = `${alerts.length} alerts`;
             
             if (alerts.length === 0) {
                 tbody.innerHTML = `
@@ -313,7 +341,6 @@
                 </tr>
             `;
             
-            // Reset stats
             document.getElementById('totalAlerts').textContent = '0';
             document.getElementById('callAlerts').textContent = '0';
             document.getElementById('putAlerts').textContent = '0';
@@ -342,11 +369,34 @@
             document.getElementById('refreshIcon').innerHTML = '⟳';
             document.getElementById('refreshText').textContent = 'Updating...';
             
-            setTimeout(() => {
-                loadData();
-                document.getElementById('refreshIcon').innerHTML = '🔄';
-                document.getElementById('refreshText').textContent = 'Refresh';
-            }, 1000);
+            const timestamp = new Date().getTime();
+            fetch(`./dashboard_data.json?t=${timestamp}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('No data file found');
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('✅ Fresh data loaded');
+                    allAlerts = data.alerts || [];
+                    
+                    updateStats(allAlerts);
+                    filterByType(currentFilter);
+                    
+                    if (data.last_updated) {
+                        document.getElementById('lastUpdate').textContent = new Date(data.last_updated).toLocaleString();
+                    }
+                    
+                    document.getElementById('refreshText').textContent = 'Updated!';
+                    setTimeout(() => {
+                        document.getElementById('refreshText').textContent = 'Refresh';
+                    }, 2000);
+                })
+                .catch(error => {
+                    console.log('❌ Refresh failed:', error);
+                })
+                .finally(() => {
+                    document.getElementById('refreshIcon').innerHTML = '🔄';
+                });
         }
 
         // Load data immediately and refresh every 30 seconds
