@@ -15,14 +15,17 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .neon-border {
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-        }
+        .neon-border { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
         .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
         .glow { text-shadow: 0 0 10px currentColor; }
         .slide-in { animation: slideIn 0.5s ease-out; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .tab-active { 
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
+        }
     </style>
 </head>
 <body class="text-white">
@@ -42,8 +45,9 @@
                 </button>
             </div>
             
+            <!-- CLICKABLE FILTER TABS -->
             <div class="mt-8 grid grid-cols-1 md:grid-cols-5 gap-6">
-                <div class="bg-gradient-to-br from-blue-600/20 to-blue-800/20 p-6 rounded-xl border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300">
+                <div onclick="filterByType('all')" id="tab-all" class="cursor-pointer bg-gradient-to-br from-blue-600/20 to-blue-800/20 p-6 rounded-xl border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300 tab-active">
                     <div class="flex items-center">
                         <span class="text-3xl mr-4">📊</span>
                         <div>
@@ -52,7 +56,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="bg-gradient-to-br from-emerald-600/20 to-emerald-800/20 p-6 rounded-xl border border-emerald-500/30 hover:border-emerald-400/50 transition-all duration-300">
+                <div onclick="filterByType('CALL')" id="tab-calls" class="cursor-pointer bg-gradient-to-br from-emerald-600/20 to-emerald-800/20 p-6 rounded-xl border border-emerald-500/30 hover:border-emerald-400/50 transition-all duration-300">
                     <div class="flex items-center">
                         <span class="text-3xl mr-4">📈</span>
                         <div>
@@ -61,7 +65,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="bg-gradient-to-br from-red-600/20 to-red-800/20 p-6 rounded-xl border border-red-500/30 hover:border-red-400/50 transition-all duration-300">
+                <div onclick="filterByType('PUT')" id="tab-puts" class="cursor-pointer bg-gradient-to-br from-red-600/20 to-red-800/20 p-6 rounded-xl border border-red-500/30 hover:border-red-400/50 transition-all duration-300">
                     <div class="flex items-center">
                         <span class="text-3xl mr-4">📉</span>
                         <div>
@@ -70,7 +74,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="bg-gradient-to-br from-purple-600/20 to-purple-800/20 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300">
+                <div onclick="filterByType('sweep')" id="tab-sweeps" class="cursor-pointer bg-gradient-to-br from-purple-600/20 to-purple-800/20 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300">
                     <div class="flex items-center">
                         <span class="text-3xl mr-4">🔥</span>
                         <div>
@@ -79,7 +83,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="bg-gradient-to-br from-amber-600/20 to-amber-800/20 p-6 rounded-xl border border-amber-500/30 hover:border-amber-400/50 transition-all duration-300">
+                <div onclick="filterByType('high-confidence')" id="tab-confidence" class="cursor-pointer bg-gradient-to-br from-amber-600/20 to-amber-800/20 p-6 rounded-xl border border-amber-500/30 hover:border-amber-400/50 transition-all duration-300">
                     <div class="flex items-center">
                         <span class="text-3xl mr-4">🎯</span>
                         <div>
@@ -101,12 +105,26 @@
             </div>
         </div>
 
+        <!-- Active Filter Display -->
+        <div class="glass-card rounded-xl p-4 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <span class="text-lg mr-2">🎯</span>
+                    <span class="font-bold text-white">Active Filter: </span>
+                    <span id="activeFilter" class="ml-2 px-3 py-1 bg-blue-600 text-white rounded-lg font-medium">All Options</span>
+                </div>
+                <button onclick="clearAllFilters()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
+                    Clear Filters
+                </button>
+            </div>
+        </div>
+
         <!-- Alerts Table -->
         <div class="glass-card rounded-2xl overflow-hidden neon-border">
             <div class="px-8 py-6 bg-gradient-to-r from-gray-800/80 to-gray-900/80 border-b border-gray-700">
                 <h2 class="text-3xl font-bold flex items-center text-white">
                     <span class="mr-3">💎</span>
-                    <span class="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Live Options Flow</span>
+                    <span class="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Filtered Options</span>
                     <span class="ml-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-lg font-bold" id="alertCount">0 alerts</span>
                 </h2>
             </div>
@@ -128,7 +146,6 @@
                                 <div class="flex flex-col items-center">
                                     <div class="text-6xl mb-4">📊</div>
                                     <p class="text-gray-300 text-lg font-medium">Loading options data...</p>
-                                    <p class="text-gray-500 text-sm mt-2">Data updates automatically when scanner runs</p>
                                 </div>
                             </td>
                         </tr>
@@ -140,9 +157,9 @@
 
     <script>
         let allAlerts = [];
+        let currentFilter = 'all';
 
         function loadData() {
-            // Load from dashboard_data.json file created by Python scanner
             fetch('./dashboard_data.json')
                 .then(response => {
                     if (!response.ok) throw new Error('No data file found');
@@ -151,24 +168,61 @@
                 .then(data => {
                     console.log('✅ Data loaded from Python scanner');
                     allAlerts = data.alerts || [];
-                    document.getElementById('connectionStatus').innerHTML = '🟢 Data Loaded';
-                    document.getElementById('connectionStatus').className = 'px-4 py-2 rounded-lg bg-green-700/50 text-green-300 text-sm';
                     
-                    displayAlerts(allAlerts);
                     updateStats(allAlerts);
+                    filterByType(currentFilter); // Apply current filter
                     
                     if (data.last_updated) {
                         document.getElementById('lastUpdate').textContent = new Date(data.last_updated).toLocaleString();
                     }
                 })
                 .catch(error => {
-                    console.log('❌ No data file found - run Python scanner');
-                    allAlerts = [];
-                    document.getElementById('connectionStatus').innerHTML = '🔴 No Data';
-                    document.getElementById('connectionStatus').className = 'px-4 py-2 rounded-lg bg-red-700/50 text-red-300 text-sm';
-                    
+                    console.log('❌ No data file found');
                     displayNoData();
                 });
+        }
+
+        function filterByType(type) {
+            currentFilter = type;
+            
+            // Update tab styling
+            document.querySelectorAll('[id^="tab-"]').forEach(tab => {
+                tab.classList.remove('tab-active');
+            });
+            document.getElementById(`tab-${type === 'high-confidence' ? 'confidence' : type}`).classList.add('tab-active');
+            
+            // Filter alerts
+            let filtered = allAlerts;
+            let filterName = 'All Options';
+            
+            switch(type) {
+                case 'CALL':
+                    filtered = allAlerts.filter(a => a.type === 'CALL');
+                    filterName = 'Call Options Only';
+                    break;
+                case 'PUT':
+                    filtered = allAlerts.filter(a => a.type === 'PUT');
+                    filterName = 'Put Options Only';
+                    break;
+                case 'sweep':
+                    filtered = allAlerts.filter(a => a.sweep === true);
+                    filterName = 'Sweep Alerts Only';
+                    break;
+                case 'high-confidence':
+                    filtered = allAlerts.filter(a => a.score >= 70);
+                    filterName = 'High Confidence (70+ Score)';
+                    break;
+                default:
+                    filtered = allAlerts;
+                    filterName = 'All Options';
+            }
+            
+            document.getElementById('activeFilter').textContent = filterName;
+            displayAlerts(filtered);
+        }
+
+        function clearAllFilters() {
+            filterByType('all');
         }
 
         function displayAlerts(alerts) {
@@ -176,14 +230,24 @@
             document.getElementById('alertCount').textContent = `${alerts.length} alerts`;
             
             if (alerts.length === 0) {
-                displayNoData();
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <div class="text-6xl mb-4">🔍</div>
+                                <p class="text-gray-300 text-xl font-bold mb-2">No Options Match This Filter</p>
+                                <p class="text-gray-500">Try a different filter or wait for new scanner data</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
                 return;
             }
 
             tbody.innerHTML = alerts.map((alert, index) => {
                 const moneyness = getMoneyness(alert.strike, alert.currentPrice, alert.type);
-                const confidenceColor = alert.score >= 80 ? 'text-emerald-400' : alert.score >= 65 ? 'text-blue-400' : 'text-amber-400';
-                const confidenceEmoji = alert.score >= 80 ? '🎯' : alert.score >= 65 ? '✅' : '⚠️';
+                const confidenceColor = alert.score >= 80 ? 'text-emerald-400' : alert.score >= 65 ? 'text-blue-400' : alert.score >= 50 ? 'text-amber-400' : 'text-red-400';
+                const confidenceEmoji = alert.score >= 80 ? '🎯' : alert.score >= 65 ? '✅' : alert.score >= 50 ? '⚠️' : '❌';
                 
                 return `
                     <tr class="hover:bg-gray-800/30 transition-all duration-300 slide-in" style="animation-delay: ${index * 0.1}s">
@@ -211,6 +275,7 @@
                             <div class="text-lg font-bold text-white">${alert.volume?.toLocaleString()}</div>
                             <div class="text-sm text-gray-400">OI: ${alert.openInterest?.toLocaleString()}</div>
                             <div class="text-sm text-cyan-400 font-medium">IV: ${(alert.impliedVolatility * 100).toFixed(1)}%</div>
+                            <div class="text-xs text-gray-500 mt-1">Ratio: ${alert.volume && alert.openInterest ? (alert.volume / alert.openInterest).toFixed(2) : 'N/A'}</div>
                         </td>
                         <td class="px-6 py-6">
                             <div class="space-y-1 text-sm">
@@ -227,6 +292,7 @@
                                 <span class="ml-2 text-sm text-gray-400">score</span>
                             </div>
                             <div class="text-sm text-gray-300 leading-relaxed max-w-xs">${alert.commentary}</div>
+                            <div class="text-xs text-gray-500 mt-2">${new Date(alert.timestamp).toLocaleTimeString()}</div>
                         </td>
                     </tr>
                 `;
@@ -241,8 +307,7 @@
                         <div class="flex flex-col items-center">
                             <div class="text-6xl mb-4">🔍</div>
                             <p class="text-gray-300 text-xl font-bold mb-2">No Options Data Found</p>
-                            <p class="text-gray-500">Run your Python scanner to populate the dashboard</p>
-                            <p class="text-gray-600 text-sm mt-2">Command: python enhanced_run_alerts.py</p>
+                            <p class="text-gray-500">Python scanner hasn't run yet or found no alerts</p>
                         </div>
                     </td>
                 </tr>
@@ -262,7 +327,7 @@
             document.getElementById('callAlerts').textContent = alerts.filter(a => a.type === 'CALL').length;
             document.getElementById('putAlerts').textContent = alerts.filter(a => a.type === 'PUT').length;
             document.getElementById('sweepAlerts').textContent = alerts.filter(a => a.sweep).length;
-            document.getElementById('highConfidence').textContent = alerts.filter(a => a.score >= 80).length;
+            document.getElementById('highConfidence').textContent = alerts.filter(a => a.score >= 70).length;
         }
 
         function getMoneyness(strike, currentPrice, type) {
