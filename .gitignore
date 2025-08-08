@@ -75,11 +75,11 @@ jspm_packages/
 
 # Local data files
 *.csv
-*.json
 *.png
 alerts_backup.json
 alert_history.csv
 *_chart.png
+
 
 # OS generated files
 .DS_Store
